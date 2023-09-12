@@ -1,0 +1,28 @@
+version: "4.0"
+
+services:
+  product-service:
+    build: spring_boot_opentelemetry_upstream/
+    ports:
+      - "8080:8080"
+
+  price-service:
+    build: spring_boot_opentelemetry_downstream/
+    ports:
+      - "8081:8081"
+
+  collector:
+    image: otel/opentelemetry-collector:0.72.0
+    command: [ "--config=/etc/otel-collector-config.yml" ]
+    volumes:
+      - ./otel-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317"
+    depends_on:
+      - jaeger-service
+
+  jaeger-service:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14250"
